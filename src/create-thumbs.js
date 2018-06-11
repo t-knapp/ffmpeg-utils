@@ -1,25 +1,27 @@
 const { exec } = require('child_process');
+const path = require('path');
 
 const fileName = process.argv[2] || '';
 const numberOfThumbs = process.argv[3] || 0;
+
+const pad = function (num, size) {
+  var s = "00" + num;
+  return s.substr(s.length - size);
+}
 
 /*
  * @See: https://superuser.com/a/821680
  * @See: https://stackoverflow.com/a/14551281
  */
-
 const createThumb = function(fileName, time, x) {
-    const thumbFileName = `${fileName}_${x}.jpg`;
+    const thumbFileName = `${fileName}_${pad(x, 2)}.jpg`;
     const cmd = `ffmpeg -ss ${time} -i ${fileName} -vf select="eq(pict_type\\,I)" -vframes 1 ${thumbFileName}`;
     exec(cmd, (err, stdout, stderr) => {
         if (err) {
           // node couldn't execute the command
+          throw err;
           return;
         }
-
-        // the *entire* stdout and stderr (buffered)
-        //console.log(`stdout: ${stdout}`);
-        //console.log(`stderr: ${stderr}`);
         console.log(`Created thumb ${thumbFileName}`);
     });
 }
@@ -27,21 +29,16 @@ const createThumb = function(fileName, time, x) {
 exec('ffprobe -v quiet -of json -show_format ' + fileName, (err, stdout, stderr) => {
   if (err) {
     // node couldn't execute the command
+    throw err;
     return;
   }
-  // the *entire* stdout and stderr (buffered)
-  //console.log(`stdout: ${stdout}`);
-  //console.log(`stderr: ${stderr}`);
 
   const inputStats = JSON.parse(stdout);
   const duration = Math.floor(inputStats.format.duration);
-  //console.log(`Input duration is ${duration} seconds.`);
-  //console.log(`Will create ${numberOfThumbs} thumbs.`);
 
   let time;
   for(let x = 1; x <= numberOfThumbs; x++) {
       time = parseInt( (x - 0.5) * duration / numberOfThumbs );
-      //console.log('time', time);
       createThumb(fileName, time, x);
   }
 });
