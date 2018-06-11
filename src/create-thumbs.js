@@ -3,6 +3,11 @@ const { exec } = require('child_process');
 const fileName = process.argv[2] || '';
 const numberOfThumbs = process.argv[3] || 0;
 
+/*
+ * @See: https://superuser.com/a/821680
+ * @See: https://stackoverflow.com/a/14551281
+ */
+
 const createThumb = function(fileName, time, x) {
     const thumbFileName = `${fileName}_${x}.jpg`;
     const cmd = `ffmpeg -ss ${time} -i ${fileName} -vf select="eq(pict_type\\,I)" -vframes 1 ${thumbFileName}`;
